@@ -9,7 +9,7 @@
 
 Provisioned three S3 buckets (`managed`, `example1`, `example2`) using `terraform apply -auto-approve`. Verified that Terraform created the resources and tracked them in local state.
 
-**Screenshot:** `screenshots/terraformApplying.png`
+![Terraform Apply](screenshots/terraformApplying.png)
 
 ---
 
@@ -21,7 +21,9 @@ Explored state using multiple inspection commands:
 - `terraform state show aws_s3_bucket.managed` — inspected the full attribute set of the managed bucket, including ARN, region, tags, grants, and encryption configuration
 - `terraform show -json | jq '.'` — viewed the full state as structured JSON, confirming all resource metadata including hosted zone IDs and provider details
 
-**Screenshots:** `screenshots/exploringStateCommands.png`, `screenshots/showingJson.png`
+![Exploring State Commands](screenshots/exploringStateCommands.png)
+
+![Showing JSON](screenshots/showingJson.png)
 
 ---
 
@@ -43,7 +45,7 @@ aws s3 ls | grep state-ops-unmanaged
 
 Confirmed the bucket existed in AWS but was unknown to Terraform's state.
 
-**Screenshot:** `screenshots/creatingResourceOutsideTerraform.png`
+![Creating Resource Outside Terraform](screenshots/creatingResourceOutsideTerraform.png)
 
 ---
 
@@ -57,7 +59,7 @@ terraform import aws_s3_bucket.imported eric-borba-state-ops-unmanaged
 
 Import was successful. Running `terraform plan` afterwards confirmed that Terraform detected a tag drift between the real resource (tagged `"Unmanaged Bucket"`) and the desired configuration (tagged `"Imported Bucket"`), and planned an in-place update — no destroy/recreate required.
 
-**Screenshot:** `screenshots/importingUnmanagedExistingResource.png`
+![Importing Unmanaged Existing Resource](screenshots/importingUnmanagedExistingResource.png)
 
 ---
 
@@ -71,7 +73,7 @@ terraform apply -auto-approve
 
 Terraform reverted both `example1` and `imported` to their configured tag values. Result: 0 added, 2 changed, 0 destroyed.
 
-**Screenshot:** `screenshots/CheckingIfConfigurationMatches.png`
+![Checking If Configuration Matches](screenshots/CheckingIfConfigurationMatches.png)
 
 ---
 
@@ -86,7 +88,7 @@ terraform state mv aws_s3_bucket.example1 aws_s3_bucket.primary
 
 The subsequent plan showed a replacement was needed because the bucket name itself also changed (S3 bucket names are immutable), confirming that `state mv` handles address renaming, but actual property changes still trigger resource replacement.
 
-**Screenshot:** `screenshots/movingResourcesinState.png`
+![Moving Resources in State](screenshots/movingResourcesinState.png)
 
 ---
 
@@ -103,7 +105,7 @@ Verified the outcome:
 - `aws s3 ls | grep state-ops-example2` — bucket still exists in AWS (`eric-borba-state-ops-example2`)
 - `terraform plan | grep example2` — Terraform now plans to *create* it again (treats it as unmanaged)
 
-**Screenshot:** `screenshots/removingResourceFromState.png`
+![Removing Resource From State](screenshots/removingResourceFromState.png)
 
 ---
 
@@ -120,7 +122,7 @@ Confirmed the JSON structure included all tracked resources with their provider 
 
 > **Warning:** `terraform state push` can overwrite remote state and should never be used in production without extreme care.
 
-**Screenshot:** `screenshots/PullandPushState.png`
+![Pull and Push State](screenshots/PullandPushState.png)
 
 ---
 
@@ -134,7 +136,7 @@ terraform apply -replace="aws_s3_bucket.primary"
 
 Terraform planned a destroy-then-create for `aws_s3_bucket.primary` and also picked up the previously removed `aws_s3_bucket.example2` as a new resource to create, demonstrating how removing from state causes Terraform to re-plan creation.
 
-**Screenshot:** `screenshots/ReplacingResource.png`
+![Replacing Resource](screenshots/ReplacingResource.png)
 
 ---
 
@@ -165,7 +167,9 @@ kill $APPLY_PID
 
 > **Key insight:** `force-unlock` is primarily useful with remote backends (S3 + DynamoDB, Terraform Cloud) where a crashed process leaves a dangling lock. Local state is self-resolving once the holding process exits.
 
-**Screenshots:** `screenshots/handlingLockedState.png`, `screenshots/forcingUnlock.png`
+![Handling Locked State](screenshots/handlingLockedState.png)
+
+![Forcing Unlock](screenshots/forcingUnlock.png)
 
 ---
 
